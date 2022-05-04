@@ -38,6 +38,7 @@ const registerServiceWorker = async () => {
 
 const updateServiceWorker = async () => {
   const registration = await navigator.serviceWorker.getRegistration();
+  console.log({ registration });
   if (registration) {
     registration.update();
   } else {
