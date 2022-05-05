@@ -42,6 +42,29 @@ const createCallApiWithWorker = () => {
   };
 };
 
+const createCallApiWithSharedWorker = () => {
+  let worker;
+  return () => {
+    if (!worker) {
+      worker = new SharedWorker('./shared-worker.js');
+      worker.port.start();
+      worker.port.onmessage = (e) => {
+        const res = e.data;
+        if (res.ok) {
+          showResponse(JSON.stringify(res.json));
+          showAuthorization(res.json.headers.Authorization);  
+        } else {
+          alert('response is failed');
+          console.error(res.status);
+        }
+      };
+    }
+    worker.port.postMessage({
+      url: 'https://httpbin.org/get'
+    });
+  };
+}
+
 const registerServiceWorker = async () => {
   const registration = await navigator.serviceWorker.register(
     '/service-worker.js',
@@ -73,6 +96,7 @@ window.addEventListener('load', () => {
     { id: 'register-service-worker', onClick: registerServiceWorker },
     { id: 'update-service-worker', onClick: updateServiceWorker },
     { id: 'call-api-worker', onClick: createCallApiWithWorker() },
+    { id: 'call-api-shared-worker', onClick: createCallApiWithSharedWorker() },
   ].forEach(({ id, onClick }) => {
     const button = document.getElementById(id);
     button.addEventListener('click', onClick);
