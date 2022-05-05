@@ -1,8 +1,8 @@
 {
-  "name": "play-service-worker",
+  "name": "play-worker",
   "version": "1.0.0",
   "description": "",
-  "main": "service-worker.js",
+  "main": "index.js",
   "scripts": {
     "start": "python3 -m http.server 8888"
   },

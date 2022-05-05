@@ -79,26 +79,42 @@ const registerServiceWorker = async () => {
   } else if (registration.active) {
     console.log('Service worker active');
   }
+  await updateServiceWorkerStatus();
 };
 
-const updateServiceWorker = async () => {
+const unregisterServiceWorker = async () => {
   const registration = await navigator.serviceWorker.getRegistration();
-  if (registration) {
-    registration.update();
+  if (!registration) {
+    return;
+  }
+  await registration.unregister();
+  await updateServiceWorkerStatus();
+}
+
+const updateServiceWorkerStatus = async () => {
+  const statusElem = document.getElementById('service-worker-status');
+  const registration = await navigator.serviceWorker.getRegistration();
+  if (registration && registration.active) {
+    if (!registration.active.onstatechange) {
+      registration.active.onstatechange = updateServiceWorkerStatus;
+    }
+    statusElem.textContent = 'Service Worker registered';
+    console.log({ registration });
   } else {
-    console.log('no registered service worker');
+    statusElem.textContent = 'No registered Service Worker'
   }
 };
 
-window.addEventListener('load', () => {
+window.addEventListener('load', async () => {
   [
     { id: 'call-api', onClick: callApi },
     { id: 'register-service-worker', onClick: registerServiceWorker },
-    { id: 'update-service-worker', onClick: updateServiceWorker },
+    { id: 'unregister-service-worker', onClick: unregisterServiceWorker },
     { id: 'call-api-worker', onClick: createCallApiWithWorker() },
     { id: 'call-api-shared-worker', onClick: createCallApiWithSharedWorker() },
   ].forEach(({ id, onClick }) => {
     const button = document.getElementById(id);
     button.addEventListener('click', onClick);
   });
+  await updateServiceWorkerStatus();
 });
