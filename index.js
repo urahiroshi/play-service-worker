@@ -18,7 +18,29 @@ const callApi = async () => {
     alert('response is failed');
     console.error(res.status);
   }
-}
+};
+
+const createCallApiWithWorker = () => {
+  let worker;
+  return () => {
+    if (!worker) {
+      worker = new Worker('./dedicated-worker.js');
+      worker.onmessage = (e) => {
+        const res = e.data;
+        if (res.ok) {
+          showResponse(JSON.stringify(res.json));
+          showAuthorization(res.json.headers.Authorization);  
+        } else {
+          alert('response is failed');
+          console.error(res.status);
+        }
+      };
+    }
+    worker.postMessage({
+      url: 'https://httpbin.org/get'
+    });
+  };
+};
 
 const registerServiceWorker = async () => {
   const registration = await navigator.serviceWorker.register(
@@ -46,10 +68,13 @@ const updateServiceWorker = async () => {
 };
 
 window.addEventListener('load', () => {
-  const callApiButton = document.getElementById('call-api');
-  callApiButton.addEventListener('click', callApi);
-  const registerServiceWorkerButton = document.getElementById('register-service-worker');
-  registerServiceWorkerButton.addEventListener('click', registerServiceWorker);
-  const updateServiceWorkerButton = document.getElementById('update-service-worker');
-  updateServiceWorkerButton.addEventListener('click', updateServiceWorker);
+  [
+    { id: 'call-api', onClick: callApi },
+    { id: 'register-service-worker', onClick: registerServiceWorker },
+    { id: 'update-service-worker', onClick: updateServiceWorker },
+    { id: 'call-api-worker', onClick: createCallApiWithWorker() },
+  ].forEach(({ id, onClick }) => {
+    const button = document.getElementById(id);
+    button.addEventListener('click', onClick);
+  });
 });
