@@ -66,19 +66,12 @@ const createCallApiWithSharedWorker = () => {
 }
 
 const registerServiceWorker = async () => {
-  const registration = await navigator.serviceWorker.register(
+  await navigator.serviceWorker.register(
     '/service-worker.js',
     {
       scope: '/',
     }
   );
-  if (registration.installing) {
-    console.log('Service worker installing');
-  } else if (registration.waiting) {
-    console.log('Service worker installed');
-  } else if (registration.active) {
-    console.log('Service worker active');
-  }
   await updateServiceWorkerStatus();
 };
 
@@ -94,10 +87,7 @@ const unregisterServiceWorker = async () => {
 const updateServiceWorkerStatus = async () => {
   const statusElem = document.getElementById('service-worker-status');
   const registration = await navigator.serviceWorker.getRegistration();
-  if (registration && registration.active) {
-    if (!registration.active.onstatechange) {
-      registration.active.onstatechange = updateServiceWorkerStatus;
-    }
+  if (registration) {
     statusElem.textContent = 'Service Worker registered';
     console.log({ registration });
   } else {
