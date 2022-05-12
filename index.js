@@ -67,10 +67,7 @@ const createCallApiWithSharedWorker = () => {
 
 const registerServiceWorker = async () => {
   await navigator.serviceWorker.register(
-    '/service-worker.js',
-    {
-      scope: '/',
-    }
+    './service-worker.js',
   );
   await updateServiceWorkerStatus();
 };
